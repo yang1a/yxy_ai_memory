@@ -1,6 +1,6 @@
 # 本机材料、校验值与离线复算
 
-日期：2026-11-16（Asia/Shanghai）。本轮只读取本机材料、核对仓库和计算哈希，没有重新采样线上网络。
+日期：2026-11-17（Asia/Shanghai）。2026-11-16 首次归档；2026-11-17 追加当日新增文件并重算哈希。两次都只读取本机材料、核对仓库和计算哈希，没有重新采样线上网络。
 
 ## 1. 来源与保密原则
 
@@ -14,7 +14,9 @@
 
 | 本机绝对路径 | SHA-256 | 用途与限制 |
 |---|---|---|
-| `E:\Users\24242\Documents\deepseek-harness\default-workspace\VPS-VPN部署手册.md` | `0DD1ABC019B8B179518C11159D59F03BB9F0F419E356CD2D8BE5CD848A2AA41B` | 早期操作手册，739 行；含真实接入配置和不准确论断，**不可直接执行或发布**。用户要求删除“关闭密码登录”小节后，本轮内容确认该节已不存在。 |
+| `E:\Users\24242\Documents\deepseek-harness\default-workspace\VPS-VPN部署手册.md` | `0DD1ABC019B8B179518C11159D59F03BB9F0F419E356CD2D8BE5CD848A2AA41B` | 早期操作手册，739 行；含真实接入配置和不准确论断，**不可直接执行或发布**。用户要求删除“关闭密码登录”小节后，本轮内容确认该节已不存在。**2026-11-17 重算哈希与 11-16 一致，文件未改。** |
+| `E:\Users\24242\Documents\deepseek-harness\default-workspace\sub2api-体检指令.md` | `0D1F879AA86EB4CA246B854677B9EC7C735287E782E68B28BBD7ACE7C9ADC973` | 2026-11-17 生成的 NODE04 链路体检指令（14 项只读自检 + 判定表）。**含真实 IP、UUID、域名与节点端口**，只登记位置与哈希，不收录正文。 |
+| `E:\Users\24242\Documents\deepseek-harness\default-workspace\代理链-多级串联方案.md` | `78130A32AC10EC48C10766144597A06B7C69AAE61836D1EA09E7280DA0DAA88A` | 2026-11-17 的多级串联（主備/中转）方案笔记。含真实服务器参数，同上级别处理，不收录正文。 |
 | `C:\Temp\jptest.txt` | `CD71EFD347503CCD74165C3854302AD9B18142C1B97C2133103CBCE8BCE08A72` | 日本 SSH 隧道测试结果；ping 段没有统计，不补造。 |
 | `C:\Temp\speedtest_both.txt` | `2D04B36D3D5FC57966C7268CE5F5591077934C373407ED605A012C442C4E1741` | 美日 TCP 20 次与 VLESS 20 MB 下载 3 轮的本机输出；无完整日期头。 |
 | `C:\Temp\jptest.ps1` | `203010A5BE45360B8E43C5C99E615CFBC5B8B9DB8BD27DA76F15F26AAE9A3C65` | 当时测试脚本；硬编码网关、端口与临时路由，缺少完善异常清理。仅供审阅，不直接重跑。 |
@@ -87,9 +89,12 @@ foreach ($key in @('US', 'JP')) {
 | 角色 | 历史位置 / 参数 | 下一轮需确认什么 |
 |---|---|---|
 | US_VPS | `/etc/x-ui/x-ui.db`；运行生成配置 `/usr/local/x-ui/bin/config.json` | 面板版本、启用入站、生成配置与客户端参数对应关系。文件含凭据，不应全文输出/提交。 |
-| US_VPS | 公司 TCP 2053；friends TCP 22537；管理 54321；订阅 2096 | UFW 当前规则、证书有效期、订阅是否仍明文。 |
+| US_VPS | **2026-11-17 当前**：公司入站 `443`（REALITY，单一端口）；CDN 回源入站 `8443`（VLESS+WS+TLS，Cloudflare Origin CA 证书）；管理 `54321`（仅回环 + SSH 隧道）；订阅 `2096`（HTTP） | 当日只读核对了入站表、运行配置、连接与统计；UFW 规则、证书续期、订阅明文状态仍需复核。历史 `2053`、`22537` 已于当日合并删除。 |
+| US_VPS | 历史备份 `/root/x-ui.db.bak.2026-11-17-*`（`orphan`、`clean` 两个前缀） | 当日清理前所建；回滚前必须判断是否会覆盖后来的客户端改动。 |
 | US_VPS | 历史备份 `/root/x-ui.db.bak.2026-11-12-0254`、`/root/x-ui.db.bak.2026-11-14-0907`、`/root/x-ui.db.bak.2026-11-14-0918`、`/root/x-ui.db.bak.2026-11-16-1011` | 这些是会话中打印过的路径；本轮没有读文件或算哈希。回滚前必须判断是否会覆盖后来的客户改动。 |
-| NODE04 | `/etc/mihomo/config.yaml`；`/etc/systemd/system/mihomo.service` | 规则组、持久化、自启动与当前出站；原第三方订阅不得泄露。 |
+| NODE04 | **2026-11-17 新增**：`/etc/xray-sub2api/config.json`、`/etc/systemd/system/xray-sub2api.service`、二进制 `/usr/local/xray/xray` | 本机 Xray 客户端（入站 1081/1082）；配置含真实 UUID 与服务器地址，不应全文输出。 |
+| NODE04 | `<Docker 网关>:12891` 的 socat 中继 → `127.0.0.1:1081` | 中继是否由 systemd 托管、重启后是否自动恢复，当日未验收。 |
+| NODE04 | `/etc/mihomo/config.yaml`；`/etc/systemd/system/mihomo.service` | 规则组、持久化、自启动与当前出站；原第三方订阅不得泄露。当日只加了 CDN 源站 IP 的 `DIRECT`，域名规则仍缺。 |
 | NODE04 | `/home/user705/.config/systemd/user/socks-tunnel.service` | 用户 manager 与 linger；不能只 `su - user705` 就假定能访问其 D-Bus。 |
 | NODE04 | `/home/user705/.config/environment.d/10-proxy.conf` 与用户 shell 配置 | 哪些程序继承、哪些不支持 SOCKS，NO_PROXY 范围是否合适。 |
 | NODE04 | `/root/apply-tun.py`；历史目录 `/root/mihomo-backup-2026-11-10-1704` | 历史脚本不保证幂等；不要当作安全的一键恢复工具。 |
